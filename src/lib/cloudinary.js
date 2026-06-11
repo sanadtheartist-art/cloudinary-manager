@@ -11,7 +11,10 @@ async function cldFetch(method, path, body = null) {
   const url = `/cldapi/${cloudName}/${path}`;
 
   const opts = { method, headers: { Authorization: authHeader } };
-  if (body) opts.body = body;
+  if (body) {
+    opts.body = body;
+    if (typeof body === 'string') opts.headers['Content-Type'] = 'application/json';
+  }
 
   let res;
   try { res = await fetch(url, opts); }
@@ -37,8 +40,23 @@ export async function fetchFolders() {
   return cldFetch('GET', 'folders');
 }
 
-export async function fetchFolderContents(folderPath, type = 'image') {
-  return cldFetch('GET', `resources/${type}?prefix=${encodeURIComponent(folderPath)}&max_results=40`);
+export async function fetchFolderContents(folderPath, type = 'image', cursor = null, maxResults = 40) {
+  let path = `resources/${type}?prefix=${encodeURIComponent(folderPath)}&max_results=${maxResults}`;
+  if (cursor) path += `&next_cursor=${cursor}`;
+  return cldFetch('GET', path);
+}
+
+export async function searchResources(expression, cursor = null, maxResults = 40) {
+  // Cloudinary advanced search endpoint
+  let path = `resources/search`;
+  const body = {
+    expression: expression,
+    max_results: maxResults,
+    with_field: ['tags', 'context', 'image_metadata']
+  };
+  if (cursor) body.next_cursor = cursor;
+  
+  return cldFetch('POST', path, JSON.stringify(body));
 }
 
 export async function deleteResource(publicId, resourceType = 'image') {
