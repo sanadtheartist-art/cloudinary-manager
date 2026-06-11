@@ -5,7 +5,7 @@ import { db } from '../lib/firebase';
 import { useApp } from '../context/AppContext';
 
 export default function SetupScreen() {
-  const { user, setCredentials, setAuthStatus, toast } = useApp();
+  const { saveProfile, addBlankProfile, setAuthStatus, toast } = useApp();
   const [form, setForm]     = useState({ cloudName: '', apiKey: '', apiSecret: '', uploadPreset: '' });
   const [showSec, setShowSec] = useState(false);
   const [error, setError]   = useState('');
@@ -16,9 +16,8 @@ export default function SetupScreen() {
     if (!form.cloudName || !form.apiKey || !form.apiSecret) { setError('Cloud name, API key and secret are required.'); return; }
     setLoading(true);
     try {
-      await setDoc(doc(db, 'credentials', user.uid), form);
-      sessionStorage.setItem('cld_creds', JSON.stringify(form));
-      setCredentials(form);
+      const profile = { ...addBlankProfile(), ...form, name: 'Default Profile' };
+      await saveProfile(profile);
       setAuthStatus('app');
       toast('Cloudinary connected!', 'success');
     } catch (e) { setError('Failed to save: ' + e.message); }
