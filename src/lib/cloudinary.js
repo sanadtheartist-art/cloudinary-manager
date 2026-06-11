@@ -7,18 +7,15 @@ async function cldFetch(method, path, body = null) {
   const { cloudName, apiKey, apiSecret } = creds;
   const authHeader = 'Basic ' + btoa(apiKey + ':' + apiSecret);
 
-  // Use local proxy when on localhost, direct otherwise
-  const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
-  const url = isLocal
-    ? `/cldapi/${cloudName}/${path}`
-    : `https://api.cloudinary.com/v1_1/${cloudName}/${path}`;
+  // Always use the local Vite proxy to avoid CORS
+  const url = `/cldapi/${cloudName}/${path}`;
 
   const opts = { method, headers: { Authorization: authHeader } };
   if (body) opts.body = body;
 
   let res;
   try { res = await fetch(url, opts); }
-  catch (e) { throw new Error('Server unreachable. Run: node server.js  (' + e.message + ')'); }
+  catch (e) { throw new Error('Network error or blocked by adblocker (' + e.message + ')'); }
 
   let json;
   try { json = await res.json(); }
