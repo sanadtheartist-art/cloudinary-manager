@@ -15,7 +15,7 @@ export default defineConfig({
         target: 'https://api.cloudinary.com',
         changeOrigin: true,
         secure: true,
-        rewrite: (path) => path.replace(/^\/cldapi\/([^/]+)/, '/v1_1/$1'),
+        rewrite: (path) => path.replace(/^\/cldapi\//, '/v1_1/'),
       },
     },
   },
